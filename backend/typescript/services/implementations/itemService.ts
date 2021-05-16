@@ -101,6 +101,43 @@ class ItemService implements IItemService {
     };
   }
 
+  async buyItem(
+    id: string
+  ): Promise<ItemResponseDTO | null> {
+    let resultingItem: PgItem | null;
+    let updateResult: [number, PgItem[]] | null;
+    let item: PgItem | null;
+    try {
+      item = await PgItem.findByPk(id, { raw: true });
+      if (!item) {
+        throw new Error(`Item id ${id} not found`);
+      }
+      updateResult = await PgItem.update(
+        {
+            item_name: item.item_name,
+            inventory: item.inventory - 1,
+            price: item.price,
+            description: item.description,
+        },
+        { where: { id }, returning: true },
+      );
+      if (!updateResult[0]) {
+        throw new Error(`Item id ${id} not found`);
+      }
+      [, [resultingItem]] = updateResult;
+    } catch (error) {
+      Logger.error(`Failed to update item. Reason = ${error.message}`);
+      throw error;
+    }
+    return {
+      id: resultingItem.id,
+      item_name: item.item_name,
+      inventory: item.inventory - 1,
+      price: item.price,
+      description: item.description,
+    };
+  }
+
   async deleteItem(id: string): Promise<void> {
     try {
       const deletedItem: number | null = await PgItem.destroy({

@@ -49,6 +49,10 @@ export interface ItemRequestDTO {
       id: string,
       Item: ItemRequestDTO,
     ): Promise<ItemResponseDTO | null>;
+
+    buyItem(
+      id: string
+    ): Promise<ItemResponseDTO | null>;
   
     /**
      * delete the Item with the given id
